@@ -5,29 +5,29 @@ from tkinter import *
 from tkcalendar import DateEntry 
 from datetime import date
 from database import Database
-from sortableListBox import SortableListBox
+from sortableListBox import Sortable_list_box
 import csv
 
 db = Database()
-selectedStudentId = 0
+selected_student_id = 0
 
-def addStudent(): # addStudent button event handler
-    global selectedStudentId
-    if selectedStudentId != 0:
-        selectedStudentId = 0
-        setText(first_name_entry, "", True)
-        setText(last_name_entry, "", True)
+def add_student(): # add_student button event handler
+    global selected_student_id
+    if selected_student_id != 0:
+        selected_student_id = 0
+        set_text(first_name_entry, "", True)
+        set_text(last_name_entry, "", True)
         grade_combobox.config(state=NORMAL)
         grade_combobox.set("")
     else:
-        firstname = first_name_entry.get()
-        lastname = last_name_entry.get()
-        if (firstname and lastname):
-            gradeValue = grade_combobox.get()
-            if gradeValue:
-                grade = grade_dict[gradeValue] 
-                selectedStudentId = db.insertStudent(firstname, lastname, grade)
-                if selectedStudentId > 0:
+        first_name = first_name_entry.get()
+        last_name = last_name_entry.get()
+        if (first_name and last_name):
+            grade_value = grade_combobox.get()
+            if grade_value:
+                grade = grade_dict[grade_value] 
+                selected_student_id = db.insert_student(first_name, last_name, grade)
+                if selected_student_id > 0:
                     first_name_entry.configure(state=DISABLED)
                     last_name_entry.config(state=DISABLED)
                     grade_combobox.config(state=DISABLED)
@@ -36,91 +36,91 @@ def addStudent(): # addStudent button event handler
         else:
             messagebox.showwarning(title="Error", message="Not all fields filled.")
 
-def addEvent():
-    global selectedStudentId
-    if selectedStudentId == 0:
-        addStudent()
-    if selectedStudentId > 0:
-        eventdate = cal.get_date()
-        eventname = events_combobox.get()
+def add_event():
+    global selected_student_id
+    if selected_student_id == 0:
+        add_student()
+    if selected_student_id > 0:
+        event_date = cal.get_date()
+        event_name = events_combobox.get()
         involvement = title_combobox.get()
         points = points_spinbox.get()
-        allFields = eventdate and eventname and involvement and points
-        if allFields:
-            db.insertEvent(selectedStudentId, eventdate, eventname, involvement, points)
+        all_fields = event_date and event_name and involvement and points
+        if all_fields:
+            db.insert_event(selected_student_id, event_date, event_name, involvement, points)
         else:
             messagebox.showwarning(title="Error", message="Not all fields filled.")
     else:
         messagebox.showwarning(title="Error", message="Student info missing")
 
-def resetEventFields():
+def reset_event_fields():
     events_combobox.set("")
     title_combobox.set("")
 
-def studentSelected(event):
-    global selectedStudentTuple
-    selectedStudentTuple = studentListBox.tree.item(studentListBox.tree.focus())["values"]
-    if selectedStudentTuple:
-        # print(selectedStudentTuple) # [2, 'firstName', 'lastName', 10, 100]
-        global selectedStudentId
-        selectedStudentId = selectedStudentTuple[0]
-        items = db.getStudentEvents(selectedStudentId)
-        eventItem = map(lambda x: x[2:], items)
-        eventListBox.showItems(eventItem)
-        setText(first_name_entry, selectedStudentTuple[1], False)
-        setText(last_name_entry, selectedStudentTuple[2], False)
-        grade_combobox.current(selectedStudentTuple[3] - 9)
+def student_selected(event):
+    global selected_student_tupel
+    selected_student_tuple = student_list_box.tree.item(student_list_box.tree.focus())["values"]
+    if selected_student_tuple:
+        # print(selected_student_tuple) # [2, 'first_name', 'last_name', 10, 100]
+        global selected_student_id
+        selected_student_id = selected_student_tuple[0]
+        items = db.get_student_events(selected_student_id)
+        event_item = map(lambda x: x[2:], items)
+        event_list_box.show_items(event_item)
+        set_text(first_name_entry, selected_student_tuple[1], False)
+        set_text(last_name_entry, selected_student_tuple[2], False)
+        grade_combobox.current(selected_student_tuple[3] - 9)
         grade_combobox.config(state=DISABLED)
-        resetEventFields()
+        reset_event_fields()
 
-def setText(textField, value, enabled):
-    textField.config(state=NORMAL) # eanble textfield first so that it's editable
-    textField.delete(0, END)
+def set_text(text_field, value, enabled):
+    text_field.config(state=NORMAL) # eanble text_field first so that it's editable
+    text_field.delete(0, END)
     if value:
-        textField.insert(0, value)
+        text_field.insert(0, value)
     if enabled:
-        textField.config(state=NORMAL)
+        text_field.config(state=NORMAL)
     else:
-        textField.config(state=DISABLED)
+        text_field.config(state=DISABLED)
 
-def searchByName():
-    keyWord = searchInput.get()
+def search_by_name():
+    keyWord = search_input.get()
     if (keyWord):
-        items = db.searchByName(keyWord)
-        studentListBox.showItems(items) 
-        eventListBox.showItems([])  
+        items = db.search_by_name(keyWord)
+        student_list_box.show_items(items) 
+        event_list_box.show_items([])  
     else:
         messagebox.showwarning(title="Error", message="please type a name to search.")
 
-def viewAllStudents():
-    items = db.getAllStudents()
-    studentListBox.showItems(items)
-    eventListBox.showItems([])
-    global selectedStudentId
-    selectedStudentId = 0
+def view_all_students():
+    items = db.get_all_students()
+    student_list_box.show_items(items)
+    event_list_box.show_items([])
+    global selected_student_id
+    selected_student_id = 0
 
-def getGradeStudents():
-    gradeValue = grade_filter_combobox.get()
-    if gradeValue:
-        grade = grade_dict[gradeValue]
-        items = db.getAllStudents(grade)
+def get_grade_students():
+    grade_value = grade_filter_combobox.get()
+    if grade_value:
+        grade = grade_dict[grade_value]
+        items = db.get_all_students(grade)
         return items
     else:
         messagebox.showwarning(title="Error", message="please select a grade.")
 
-def viewGradeStudents():
-    gradeStudents = getGradeStudents()
-    if gradeStudents:
-        studentListBox.showItems(gradeStudents)
-        eventListBox.showItems([])
+def view_grade_students():
+    grade_students = get_grade_students()
+    if grade_students:
+        student_list_box.show_items(grade_students)
+        event_list_box.show_items([])
 
-def exportGradeStudents():
-    gradeStudents = getGradeStudents()
-    if gradeStudents:
+def export_grade_students():
+    grade_student = get_grade_students()
+    if grade_student:
         with open('students.csv', 'w', newline='') as file:
             writer = csv.writer(file)
             writer.writerow(["First Name", "Last Name", "Grade", "Points"])
-            for row in gradeStudents:
+            for row in grade_student:
                 writer.writerow(row[1:])
 
 window = tkinter.Tk()
@@ -134,10 +134,10 @@ frame.pack(padx=20, pady = 20, side = LEFT, fill = BOTH)
 leaderboard_frame = tkinter.Frame(center)
 leaderboard_frame.pack(padx=20, pady = 20, side=RIGHT, fill = BOTH)
 
-studentListBox = SortableListBox(ttk, leaderboard_frame, 
+student_list_box = Sortable_list_box(ttk, leaderboard_frame, 
     ["ID", "First Name", "Last Name", "Grade", "Total Points"])
-studentListBox.tree.bind('<ButtonRelease-1>', studentSelected)
-eventListBox = SortableListBox(ttk, leaderboard_frame, 
+student_list_box.tree.bind('<ButtonRelease-1>', student_selected)
+event_list_box = Sortable_list_box(ttk, leaderboard_frame, 
     ["Date", "Event", "Involvement", "Points"])
 
 #New Register or Search Student
@@ -145,8 +145,8 @@ user_registration_frame = tkinter.LabelFrame(frame,width=10, height=200, text = 
 user_registration_frame.grid(row= 0, column=0, sticky="news", padx=20, pady=5)
 
 
-newStudent = tkinter.Button(user_registration_frame, text="Add New Student", command=addStudent)
-newStudent.grid(row=0, column=0, sticky="news", padx=10, pady=10)
+new_student = tkinter.Button(user_registration_frame, text="Add New Student", command=add_student)
+new_student.grid(row=0, column=0, sticky="news", padx=10, pady=10)
 
 # Saving User Info
 user_info_frame =tkinter.LabelFrame(frame, text=" Student Information ")
@@ -198,22 +198,16 @@ points_spinbox = tkinter.Spinbox(event_frame, from_=1, to=1000,width=15)
 points_label.grid(row=3, column=1)
 points_spinbox.grid(row=4, column=1, padx=10, pady=10)
 
-# registered_label = tkinter.Label(courses_frame, text="Student Registration Status")
-# reg_status_var = tkinter.StringVar(value="Not Registered")
-# registered_check = tkinter.Checkbutton(courses_frame, text="Already Registered Student", variable=reg_status_var, onvalue="Registered", offvalue="Not registered")
-# registered_label.grid(row=0, column=0)
-# registered_check.grid(row=1, column=0)
-
 # Button
-button = tkinter.Button(frame, text="Add Event", command=addEvent)
+button = tkinter.Button(frame, text="Add Event", command=add_event)
 button.grid(row=5, column=0, sticky="news", padx=20, pady=10)
-viewAllButton = tkinter.Button(frame, text="show all students", command=viewAllStudents)
-viewAllButton.grid(row=6, column=0, sticky="news", padx=20, pady=10)
+view_all_button = tkinter.Button(frame, text="show all students", command=view_all_students)
+view_all_button.grid(row=6, column=0, sticky="news", padx=20, pady=10)
 
-searchButton = tkinter.Button(frame, text = "Search by name", command=searchByName)
-searchButton.grid(row = 7, column = 0)
-searchInput = tkinter.Entry(frame)
-searchInput.grid(row = 7, column = 1)
+search_button = tkinter.Button(frame, text = "Search by name", command=search_by_name)
+search_button.grid(row = 7, column = 0)
+search_input = tkinter.Entry(frame)
+search_input.grid(row = 7, column = 1)
 
 grade_filter_label = tkinter.Label(frame, text="Grade: ")
 grade_filter_combobox = ttk.Combobox(frame, state="readonly", values=list(grade_dict.keys()), width = 17)
@@ -221,11 +215,11 @@ grade_filter_label.grid(row=8, column=0,sticky="news",padx = 15)
 grade_filter_combobox.grid(row=8, column=1,padx=20, pady = 10)
 grade_filter_combobox.current(0)
 
-viewGradeButton = tkinter.Button(frame, text = "View studends in grade", command=viewGradeStudents)
-viewGradeButton.grid(row = 9, column = 0)
+view_grade_button = tkinter.Button(frame, text = "View students in grade", command=view_grade_students)
+view_grade_button.grid(row = 9, column = 0)
 
-exportGradeButton = tkinter.Button(frame, text = "Export studends in grade", command=exportGradeStudents)
-exportGradeButton.grid(row = 9, column = 1)
+export_grade_button = tkinter.Button(frame, text = "Export students in grade", command=export_grade_students)
+export_grade_button.grid(row = 9, column = 1)
 
 window.mainloop()
 

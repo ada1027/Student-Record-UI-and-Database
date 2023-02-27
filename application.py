@@ -126,102 +126,123 @@ def export_grade_students():
             for row in grade_student:
                 writer.writerow(row[1:])
 
+def open_about_window(): 
+    about_window = Toplevel(window)
+    about_window.geometry("400x150")
+    about_window.grid()
+    about_window.title("About")
+    #about_window.resizable(0,0)
+    info = "This program was created by Ada and Zoe, February 2023"
+    tkinter.Label(about_window,justify=tkinter.CENTER,text=info).pack(padx=5,pady=10)
+    tkinter.Button(about_window,text='OK',width=10,command=about_window.destroy).pack(pady=10)
+    about_window.transient(window)
+    about_window.grab_set()
+    about_window.wait_window(about_window)
+
 window = tkinter.Tk()
 window.title("Student Record Update")
 
-Grid.rowconfigure(window,0,weight=1)
-Grid.columnconfigure(window,0,weight=1)
-Grid.rowconfigure(window,1,weight=1)
+menu = Menu(window)
+window.config(menu=menu)
+
+help_menu = Menu(menu, tearoff=0)
+menu.add_cascade(label="Help",menu=help_menu)
+help_menu.add_command(label="Instruction")
+help_menu.add_command(label="About", command=open_about_window)
+help_menu.add_command(label="Exit",command=window.quit)
+
+window.columnconfigure(0,weight=1)
+window.columnconfigure(1,weight=3)
 
 frame = tkinter.Frame(window)
-frame.grid(row=0,column=0,sticky="NSEW")
+frame.grid(row=0,column=0,sticky="nsew")
 
 
 
 # Saving User Info
 user_info_frame =tkinter.LabelFrame(frame, text=" Student Information ")
-user_info_frame.grid(row= 0, column=0, sticky = "news", padx=20, pady=5)
+user_info_frame.grid(row= 0, column=0, sticky = "nsew", padx=20, pady=5)
 
 first_name_label = tkinter.Label(user_info_frame, text="First Name")
-first_name_label.grid(row=0, column=0)
+first_name_label.grid(row=0, column=0,sticky="nsew")
 last_name_label = tkinter.Label(user_info_frame, text="Last Name")
-last_name_label.grid(row=0, column=1)
+last_name_label.grid(row=0, column=1,sticky="nsew")
 
 first_name_entry = tkinter.Entry(user_info_frame)
 last_name_entry = tkinter.Entry(user_info_frame)
-first_name_entry.grid(row=1, column=0,padx=20,pady=10)
-last_name_entry.grid(row=1, column=1,padx=20,pady=10)
+first_name_entry.grid(row=1, column=0,sticky="nsew",padx=20,pady=10)
+last_name_entry.grid(row=1, column=1,sticky="nsew",padx=20,pady=10)
 
 # grades
 grade_label = tkinter.Label(user_info_frame, text = "Select Grade: ")
 grade_dict = {"Grade 9": 9, "Grade 10": 10, "Grade 11": 11, "Grade 12": 12}
 grade_combobox = ttk.Combobox(user_info_frame, state="readonly", values=list(grade_dict.keys()), width = 17)
-grade_label.grid(row=2, column=0,sticky="news",padx = 15)
-grade_combobox.grid(row=3, column=0,padx=20, pady = 10)
+grade_label.grid(row=2, column=0,sticky="nsew",padx = 15)
+grade_combobox.grid(row=3, column=0,padx=20,sticky="nsew", pady = 10)
 
 #Clear Fields
 clear_field = tkinter.Button(user_info_frame,text="Reset", command = clear_fields)
-clear_field.grid(row=3, column=1, sticky="news", padx=10, pady=10)
+clear_field.grid(row=3, column=1, sticky="nsew", padx=10, pady=10)
 
 #Register New Student
 new_student = tkinter.Button(user_info_frame, text="Add New Student", command=add_student)
-new_student.grid(row=4, column=0, columnspan=2, sticky="news", padx=10, pady=10)
+new_student.grid(row=4, column=0, columnspan=2, sticky="nsew", padx=10, pady=10)
 
 
 #event logs
 event_frame = tkinter.LabelFrame(frame, text = "Event Log: ")
-event_frame.grid(row=4, column = 0,sticky = "news",padx = 20, pady = 5)
+event_frame.grid(row=4, column = 0,sticky = "nsew",padx = 20, pady = 5)
 
 event_values = ["Basketball Game", "Baseball Game", "Volleyball Game", "Soccer Game", "Talent Show", "Christmas Concert", "Spring Concert", "Mass", "Prayer"]
 events_label = tkinter.Label(event_frame, text="Event: ")
 events_combobox = ttk.Combobox(event_frame, state="readonly", values=event_values, width = 17)
-events_label.grid(row=0, column=0 )
-events_combobox.grid(row=1, column=0,padx=10)
+events_label.grid(row=0, column=0,sticky="nsew")
+events_combobox.grid(row=1, column=0,sticky="nsew",padx=10)
 
 title_label = tkinter.Label(event_frame, text="Participation")
 title_combobox = ttk.Combobox(event_frame, state="readonly", values=["Participant", "Attendant"], width = 17)
-title_label.grid(row=0, column=1,sticky="news",padx = 15)
-title_combobox.grid(row=1, column=1,padx=20, pady = 10)
+title_label.grid(row=0, column=1,sticky="nsew",padx = 15)
+title_combobox.grid(row=1, column=1,sticky="nsew",padx=20, pady = 10)
 
 date_label=tkinter.Label(event_frame,text='Date: ')
-date_label.grid(row=3,column=0)
+date_label.grid(row=3,column=0,sticky="nsew")
 cal=DateEntry(event_frame,selectmode='day',width=17)
 cal.grid(row=4,column=0,padx=20,pady=10)
 cal.set_date(date.today()) # todays date 
 
 points_label = tkinter.Label(event_frame, text="Points: ")
 points_spinbox = tkinter.Spinbox(event_frame, from_=1, to=1000,width=15)
-points_label.grid(row=3, column=1)
-points_spinbox.grid(row=4, column=1, padx=10, pady=10)
+points_label.grid(row=3, column=1,sticky="nsew")
+points_spinbox.grid(row=4, column=1, sticky="nsew",padx=10, pady=10)
 
 button = tkinter.Button(frame, text="Add Event", command=add_event)
-button.grid(row=5, column=0, sticky="news", padx=20, pady=10)
+button.grid(row=5, column=0, sticky="nsew", padx=20, pady=10)
 
 # Filters
 left_frame = tkinter.Frame(window)
-left_frame.grid(row = 0, column = 1, sticky= "NSEW")
+left_frame.grid(row = 0, column = 1, sticky= "nsew")
 
 search_button = tkinter.Button(left_frame, text = "Search by name", command=search_by_name)
 search_button.grid(row = 0, column = 2)
 search_input = tkinter.Entry(left_frame)
-search_input.grid(row = 0, column = 1, pady= 10)
+search_input.grid(row = 0, column = 1, sticky="nsew", pady= 10)
 
 grade_filter_combobox = ttk.Combobox(left_frame, state="readonly", values=list(grade_dict.keys()), width = 17)
-grade_filter_combobox.grid(row=1, column=1)
+grade_filter_combobox.grid(row=1, column=1,sticky="nsew")
 grade_filter_combobox.current(0)
 
 view_grade_button = tkinter.Button(left_frame, text = "View Students in Grade", command=view_grade_students)
-view_grade_button.grid(row = 1, column = 2,padx=10)
+view_grade_button.grid(row = 1, column = 2,sticky="nsew",padx=10)
 
 export_grade_button = tkinter.Button(left_frame, text = "Export Students in Grade", command=export_grade_students)
-export_grade_button.grid(row = 1, column = 0,padx=10)
+export_grade_button.grid(row = 1, column = 0,sticky="nsew",padx=10)
 
 view_all_button = tkinter.Button(left_frame, text="Show All Students", command=view_all_students,width=0)
 view_all_button.grid(row = 0, column = 0)
 
 #Leaderboard
 leaderboard_frame = tkinter.Frame(left_frame)
-leaderboard_frame.grid(row=5,column=0,sticky="NSEW",pady=10,columnspan=3)
+leaderboard_frame.grid(row=5,column=0,sticky="nsew",pady=10,columnspan=3)
 
 student_list_box = Sortable_list_box(ttk, leaderboard_frame, ["ID", "First Name", "Last Name", "Grade", "Total Points"],8)
 student_list_box.tree.bind('<ButtonRelease-1>', student_selected)

@@ -3,11 +3,12 @@ import tkinter.font as tkFont
 
 # reference: https://stackoverflow.com/questions/5286093/display-listbox-with-columns-using-tkinter
 class Sortable_list_box(object):
-    def __init__(self, ttk, container, headings):
+    def __init__(self, ttk, container, headings, height):
         self.tree = None
         self.ttk = ttk
         self.container = container
         self.headings = headings
+        self.height = height
         self._setup_widgets()
 
     def show_items(self, items):
@@ -25,14 +26,11 @@ class Sortable_list_box(object):
                         self.tree.column(self.headings[ix], width=col_w)
 
     def _setup_widgets(self):
-        # msg = self.ttk.Label(wraplength="4i", justify="left", anchor="n", padding=(10, 2, 10, 6))
-        # msg.pack(fill='x')
-
         container = tkinter.Frame(self.container)
         container.pack(fill='both', expand=True)
 
         # create a treeview with dual scrollbars
-        self.tree = self.ttk.Treeview(self.container, columns=self.headings, show="headings")
+        self.tree = self.ttk.Treeview(self.container, columns=self.headings, show="headings", height = self.height)
         vsb = self.ttk.Scrollbar(orient="vertical",
             command=self.tree.yview)
         hsb = self.ttk.Scrollbar(orient="horizontal",
@@ -49,8 +47,7 @@ class Sortable_list_box(object):
             self.tree.heading(col, text=col.title(),
                 command=lambda c=col: self.sortby(self.tree, c, 0))
             # adjust the column's width to the header string
-            self.tree.column(col,
-                width=tkFont.Font().measure(col.title()))
+            self.tree.column(col, width=tkFont.Font().measure(col.title()),)
 
     def sortby(self, tree, col, descending):
         # grab values to sort

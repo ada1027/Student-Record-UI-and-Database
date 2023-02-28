@@ -8,8 +8,16 @@ from database import Database
 from sortableListBox import Sortable_list_box
 import csv
 
+# connect to sqlite database
 db = Database()
+# selected student id before inserting an event
 selected_student_id = 0
+# two points for each event, one for participant another for attendant
+event_dict = { "Basketball Game":(50, 10), "Baseball Game":(50, 10), "Volleyball Game":(50, 10), "Soccer Game":(50, 10), "Tennis":(50, 10),
+                "Talent Show":(50, 10), "Christmas Concert":(50, 10), "Spring Concert":(50, 10), "Mass":(50, 10), "Prayer":(50, 10)}
+# show "Basketball Gam (50,10)" in event selection
+event_list = list(event_dict.keys())
+
 def clear_fields():
     global selected_student_id
     selected_student_id = 0
@@ -18,7 +26,9 @@ def clear_fields():
     grade_combobox.config(state=NORMAL)
     grade_combobox.set("")
     new_student.config(state=NORMAL)
-def add_student(): # add_student button event handler
+
+# add_student button event handler
+def add_student(): 
     global selected_student_id
     first_name = first_name_entry.get()
     last_name = last_name_entry.get()
@@ -41,14 +51,18 @@ def add_event():
     global selected_student_id
     if selected_student_id == 0:
         add_student()
+
     if selected_student_id > 0:
         event_date = cal.get_date()
-        event_name = events_combobox.get()
+        event_selection = events_combobox.get()
+        event_name, separator, tail = event_selection.partition(' (')
+        quarter = quarter_spinbox.get()
         involvement = title_combobox.get()
-        points = points_spinbox.get()
-        all_fields = event_date and event_name and involvement and points
+        points = get_event_points(event_name, involvement)
+        all_fields = event_date and event_name and involvement and quarter and points
         if all_fields:
-            db.insert_event(selected_student_id, event_date, event_name, involvement, points)
+            print(selected_student_id)
+            db.insert_event(selected_student_id, event_date, quarter, event_name, involvement, points)
         else:
             messagebox.showwarning(title="Error", message="Not all fields filled.")
     else:
@@ -58,6 +72,13 @@ def reset_event_fields():
     events_combobox.set("")
     title_combobox.set("")
 
+def get_event_points(event_name, involvement):
+    if involvement == "Participant":
+        return event_dict[event_name][0]
+    else:
+        return event_dict[event_name][1]
+
+# when a student is selected, set name and grade fields and disable those fields
 def student_selected(event):
     global selected_student_tuple
     selected_student_tuple = student_list_box.tree.item(student_list_box.tree.focus())["values"]
@@ -113,42 +134,55 @@ def get_grade_students():
 
 def view_grade_students():
     grade_students = get_grade_students()
-    if grade_students:
-        student_list_box.show_items(grade_students)
-        event_list_box.show_items([])
+    event_list_box.show_items([])
+    student_list_box.show_items(grade_students)
 
 def export_grade_students():
     grade_student = get_grade_students()
-    if grade_student:
-        with open('students.csv', 'w', newline='') as file:
-            writer = csv.writer(file)
-            writer.writerow(["First Name", "Last Name", "Grade", "Points"])
-            for row in grade_student:
-                writer.writerow(row[1:])
+    with open('students.csv', 'w', newline='') as file:
+        writer = csv.writer(file)
+        writer.writerow(["First Name", "Last Name", "Grade", "Points"])
+        for row in grade_student:
+            writer.writerow(row[1:])
 
 def open_about_window(): 
     about_window = Toplevel(window)
-    about_window.geometry("400x150")
+    about_window.geometry("400x100")
     about_window.grid()
     about_window.title("About")
-    #about_window.resizable(0,0)
-    info = "This program was created by Ada and Zoe, February 2023"
+    info = "This is a program to log and reward student participation in schools."
+    info += "\n Created by Ada and Zoe, February 2023"
     tkinter.Label(about_window,justify=tkinter.CENTER,text=info).pack(padx=5,pady=10)
     tkinter.Button(about_window,text='OK',width=10,command=about_window.destroy).pack(pady=10)
     about_window.transient(window)
     about_window.grab_set()
     about_window.wait_window(about_window)
 
+def open_instructions_window():
+    instructions_window = Toplevel(window)
+    instructions_window.geometry("600x200")
+    instructions_window.grid()
+    instructions_window.title("Instructions")
+    info = "To add new student, fill in fields and click 'Add New Student' \n To display all students on leaderboard, click 'Show All Students'\n To add new event, select student, log an event and click 'Add New Event'"
+    info += "\n To see event logs, select student on leaderboard by clicking on name \n To see students in a grade, select grade and click 'View Students in Grade' \n To search for a student, type name in text box and click 'Search By Name'"
+    info += "\n To clear all fields in Student Information, click 'Reset'"
+    tkinter.Label(instructions_window,justify=tkinter.CENTER, text=info).pack(padx=5,pady=10)
+    tkinter.Button(instructions_window,text='OK',width=10, command=instructions_window.destroy ).pack(pady=10)
+    instructions_window.transient(window)
+    instructions_window.grab_set()
+    instructions_window.wait_window(instructions_window)
+
 window = tkinter.Tk()
 window.title("Student Record Update")
 
-menu = Menu(window)
-window.config(menu=menu)
+menubar = tkinter.Menu(window)
+window.config(menu=menubar)
 
-help_menu = Menu(menu, tearoff=0)
-menu.add_cascade(label="Help",menu=help_menu)
-help_menu.add_command(label="Instruction")
+help_menu = Menu(menubar, tearoff=0)
+menubar.add_cascade(label="Help",menu=help_menu)
+help_menu.add_command(label="Instruction",command = open_instructions_window)
 help_menu.add_command(label="About", command=open_about_window)
+help_menu.add_separator()
 help_menu.add_command(label="Exit",command=window.quit)
 
 window.columnconfigure(0,weight=1)
@@ -156,8 +190,6 @@ window.columnconfigure(1,weight=3)
 
 frame = tkinter.Frame(window)
 frame.grid(row=0,column=0,sticky="nsew")
-
-
 
 # Saving User Info
 user_info_frame =tkinter.LabelFrame(frame, text=" Student Information ")
@@ -193,27 +225,26 @@ new_student.grid(row=4, column=0, columnspan=2, sticky="nsew", padx=10, pady=10)
 event_frame = tkinter.LabelFrame(frame, text = "Event Log: ")
 event_frame.grid(row=4, column = 0,sticky = "nsew",padx = 20, pady = 5)
 
-event_values = ["Basketball Game", "Baseball Game", "Volleyball Game", "Soccer Game", "Talent Show", "Christmas Concert", "Spring Concert", "Mass", "Prayer"]
 events_label = tkinter.Label(event_frame, text="Event: ")
-events_combobox = ttk.Combobox(event_frame, state="readonly", values=event_values, width = 17)
+events_combobox = ttk.Combobox(event_frame, state="readonly", values=event_list, width = 22)
 events_label.grid(row=0, column=0,sticky="nsew")
-events_combobox.grid(row=1, column=0,sticky="nsew",padx=10)
+events_combobox.grid(row=1, column=0,sticky="nsew",padx=20, pady=10)
 
 title_label = tkinter.Label(event_frame, text="Participation")
-title_combobox = ttk.Combobox(event_frame, state="readonly", values=["Participant", "Attendant"], width = 17)
+title_combobox = ttk.Combobox(event_frame, state="readonly", values=["Participant", "Attendant"], width = 12)
 title_label.grid(row=0, column=1,sticky="nsew",padx = 15)
-title_combobox.grid(row=1, column=1,sticky="nsew",padx=20, pady = 10)
+title_combobox.grid(row=1, column=1,sticky="nsew",padx=10, pady = 10)
 
 date_label=tkinter.Label(event_frame,text='Date: ')
 date_label.grid(row=3,column=0,sticky="nsew")
-cal=DateEntry(event_frame,selectmode='day',width=17)
+cal=DateEntry(event_frame,selectmode='day',width=22)
 cal.grid(row=4,column=0,padx=20,pady=10)
 cal.set_date(date.today()) # todays date 
 
-points_label = tkinter.Label(event_frame, text="Points: ")
-points_spinbox = tkinter.Spinbox(event_frame, from_=1, to=1000,width=15)
-points_label.grid(row=3, column=1,sticky="nsew")
-points_spinbox.grid(row=4, column=1, sticky="nsew",padx=10, pady=10)
+quarter_label = tkinter.Label(event_frame, text="Quarter: ")
+quarter_spinbox = tkinter.Spinbox(event_frame, from_=1, to=4,width=12)
+quarter_label.grid(row=3, column=1,sticky="nsew")
+quarter_spinbox.grid(row=4, column=1, sticky="nsew",padx=10, pady=10)
 
 button = tkinter.Button(frame, text="Add Event", command=add_event)
 button.grid(row=5, column=0, sticky="nsew", padx=20, pady=10)
@@ -222,7 +253,7 @@ button.grid(row=5, column=0, sticky="nsew", padx=20, pady=10)
 left_frame = tkinter.Frame(window)
 left_frame.grid(row = 0, column = 1, sticky= "nsew")
 
-search_button = tkinter.Button(left_frame, text = "Search by name", command=search_by_name)
+search_button = tkinter.Button(left_frame, text = "Search By Name", command=search_by_name)
 search_button.grid(row = 0, column = 2)
 search_input = tkinter.Entry(left_frame)
 search_input.grid(row = 0, column = 1, sticky="nsew", pady= 10)
@@ -234,7 +265,7 @@ grade_filter_combobox.current(0)
 view_grade_button = tkinter.Button(left_frame, text = "View Students in Grade", command=view_grade_students)
 view_grade_button.grid(row = 1, column = 2,sticky="nsew",padx=10)
 
-export_grade_button = tkinter.Button(left_frame, text = "Export Students in Grade", command=export_grade_students)
+export_grade_button = tkinter.Button(left_frame, text = "Export Students Records", command=export_grade_students)
 export_grade_button.grid(row = 1, column = 0,sticky="nsew",padx=10)
 
 view_all_button = tkinter.Button(left_frame, text="Show All Students", command=view_all_students,width=0)
@@ -244,9 +275,9 @@ view_all_button.grid(row = 0, column = 0)
 leaderboard_frame = tkinter.Frame(left_frame)
 leaderboard_frame.grid(row=5,column=0,sticky="nsew",pady=10,columnspan=3)
 
-student_list_box = Sortable_list_box(ttk, leaderboard_frame, ["ID", "First Name", "Last Name", "Grade", "Total Points"],8)
+student_list_box = Sortable_list_box(ttk, leaderboard_frame, ["ID", "First Name", "Last Name", "Grades", "Total Points"],8)
 student_list_box.tree.bind('<ButtonRelease-1>', student_selected)
-event_list_box = Sortable_list_box(ttk, leaderboard_frame, ["Date", "Event", "Involvement", "Points"],5)
+event_list_box = Sortable_list_box(ttk, leaderboard_frame, ["Date", "Quarter","Event", "Involvement", "Points"],5)
 
 window.mainloop()
 

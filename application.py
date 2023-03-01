@@ -6,6 +6,7 @@ from tkcalendar import DateEntry
 from datetime import date
 from database import Database
 from sortableListBox import Sortable_list_box
+import sv_ttk
 import csv
 
 # connect to sqlite database
@@ -172,8 +173,19 @@ def open_instructions_window():
     instructions_window.grab_set()
     instructions_window.wait_window(instructions_window)
 
+def toggle_theme():
+    if sv_ttk.get_theme() == "dark":
+        sv_ttk.use_light_theme()
+    elif sv_ttk.get_theme() == "light":
+        sv_ttk.use_dark_theme()
+    else:
+        print("Not Sun Valley theme")
+
 window = tkinter.Tk()
 window.title("Student Record Update")
+
+sv_ttk.use_light_theme()
+# sv_ttk.set_theme("dark")
 
 menubar = tkinter.Menu(window)
 window.config(menu=menubar)
@@ -182,6 +194,8 @@ help_menu = Menu(menubar, tearoff=0)
 menubar.add_cascade(label="Help",menu=help_menu)
 help_menu.add_command(label="Instruction",command = open_instructions_window)
 help_menu.add_command(label="About", command=open_about_window)
+button = ttk.Button(window, text="Toggle theme", command=toggle_theme)
+help_menu.add_command(label="Toggle Theme", command = toggle_theme)
 help_menu.add_separator()
 help_menu.add_command(label="Exit",command=window.quit)
 
